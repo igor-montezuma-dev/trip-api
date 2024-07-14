@@ -30,6 +30,30 @@ public class TripController {
     @Autowired
     private TripRepository tripRepository;
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Trip> getTripDetails(@PathVariable UUID id) {
+        Optional<Trip> trip = this.tripRepository.findById(id);
+
+        return trip.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+
+    @GetMapping("/{id}/confirm")
+    public ResponseEntity<Trip> confirmTrip(@PathVariable UUID id) {
+        Optional<Trip> trip = this.tripRepository.findById(id);
+
+        if (trip.isPresent()) {
+            Trip rawTrip = trip.get();
+            rawTrip.setIsConfirmed(true);
+
+            this.tripRepository.save(rawTrip);
+            this.participantService.triggerConfirmationEmailToParticipants(rawTrip.getId());
+            return  ResponseEntity.ok(rawTrip);
+        }
+
+        return ResponseEntity.notFound().build();
+    }
+
     @PostMapping
     public ResponseEntity<TripCreateResponse> createTrip(@RequestBody TripRequestPayload payload) {
         Trip newTrip = new Trip(payload);
@@ -38,13 +62,6 @@ public class TripController {
         this.participantService.registerParticipantsToEvent(payload.emails_to_invite(), newTrip.getId());
 
         return ResponseEntity.ok(new TripCreateResponse(newTrip.getId()));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Trip> getTripDetails(@PathVariable UUID id) {
-        Optional<Trip> trip = this.tripRepository.findById(id);
-
-        return trip.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
