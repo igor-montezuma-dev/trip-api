@@ -1,5 +1,7 @@
 package com.igormontezumadev.planner.trip.controllers;
 
+import com.igormontezumadev.planner.participant.ParticipantCreateResponse;
+import com.igormontezumadev.planner.participant.payload.ParticipantRequestPayload;
 import com.igormontezumadev.planner.participant.services.ParticipantService;
 import com.igormontezumadev.planner.trip.TripCreateResponse;
 import com.igormontezumadev.planner.trip.entities.Trip;
@@ -48,7 +50,7 @@ public class TripController {
 
             this.tripRepository.save(rawTrip);
             this.participantService.triggerConfirmationEmailToParticipants(rawTrip.getId());
-            return  ResponseEntity.ok(rawTrip);
+            return ResponseEntity.ok(rawTrip);
         }
 
         return ResponseEntity.notFound().build();
@@ -64,6 +66,31 @@ public class TripController {
         return ResponseEntity.ok(new TripCreateResponse(newTrip.getId()));
     }
 
+
+    @PostMapping("/{id}/invite")
+    public ResponseEntity<ParticipantCreateResponse> inviteParticipant(
+            @PathVariable UUID id,
+            @RequestBody ParticipantRequestPayload payload
+    ) {
+        Optional<Trip> trip = this.tripRepository.findById(id);
+
+        if (trip.isPresent()) {
+            Trip rawTrip = trip.get();
+
+
+            ParticipantCreateResponse participantCreateResponse = this.participantService
+                    .registerParticipantToEvent(payload.email(), rawTrip);
+
+            if (rawTrip.getIsConfirmed()) {
+                this.participantService.triggerConfirmationEmailToParticipant(payload.email());
+            }
+
+            return ResponseEntity.ok(participantCreateResponse);
+        }
+
+        return ResponseEntity.notFound().build();
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Trip> updateTrip(@PathVariable UUID id, @RequestBody TripRequestPayload payload) {
         Optional<Trip> trip = this.tripRepository.findById(id);
@@ -75,7 +102,7 @@ public class TripController {
             tripToUpdate.setDestination(payload.destination());
             this.tripRepository.save(tripToUpdate);
 
-            return  ResponseEntity.ok(tripToUpdate);
+            return ResponseEntity.ok(tripToUpdate);
         }
 
         return ResponseEntity.notFound().build();
