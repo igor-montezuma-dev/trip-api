@@ -1,6 +1,6 @@
 package com.igormontezumadev.planner.trip.controllers;
 
-import com.igormontezumadev.planner.participant.ParticipantService;
+import com.igormontezumadev.planner.participant.services.ParticipantService;
 import com.igormontezumadev.planner.trip.TripCreateResponse;
 import com.igormontezumadev.planner.trip.entities.Trip;
 import com.igormontezumadev.planner.trip.payloads.TripRequestPayload;
@@ -59,7 +59,7 @@ public class TripController {
         Trip newTrip = new Trip(payload);
 
         this.tripRepository.save(newTrip);
-        this.participantService.registerParticipantsToEvent(payload.emails_to_invite(), newTrip.getId());
+        this.participantService.registerParticipantsToEvent(payload.emails_to_invite(), newTrip);
 
         return ResponseEntity.ok(new TripCreateResponse(newTrip.getId()));
     }
