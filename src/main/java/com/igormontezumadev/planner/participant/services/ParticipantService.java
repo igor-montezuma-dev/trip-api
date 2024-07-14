@@ -1,6 +1,7 @@
 package com.igormontezumadev.planner.participant.services;
 
 import com.igormontezumadev.planner.participant.ParticipantCreateResponse;
+import com.igormontezumadev.planner.participant.dto.ParticipantData;
 import com.igormontezumadev.planner.participant.entities.Participant;
 import com.igormontezumadev.planner.participant.repositories.ParticipantRepository;
 import com.igormontezumadev.planner.trip.entities.Trip;
@@ -29,6 +30,16 @@ public class ParticipantService {
         this.participantRepository.save(participant);
 
         return new ParticipantCreateResponse(participant.getId());
+    }
+
+    public List<ParticipantData> getAllTripParticipants(UUID tripId) {
+        return this.participantRepository.findByTripId(tripId).stream().map(participant -> new ParticipantData(
+                participant.getId(),
+                participant.getName(),
+                participant.getEmail(),
+                participant.getIsConfirmed()
+        )).toList();
+
     }
 
     public void triggerConfirmationEmailToParticipants(UUID tripId) {

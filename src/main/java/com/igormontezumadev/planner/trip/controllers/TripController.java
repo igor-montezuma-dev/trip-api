@@ -1,6 +1,8 @@
 package com.igormontezumadev.planner.trip.controllers;
 
 import com.igormontezumadev.planner.participant.ParticipantCreateResponse;
+import com.igormontezumadev.planner.participant.dto.ParticipantData;
+import com.igormontezumadev.planner.participant.entities.Participant;
 import com.igormontezumadev.planner.participant.payload.ParticipantRequestPayload;
 import com.igormontezumadev.planner.participant.services.ParticipantService;
 import com.igormontezumadev.planner.trip.TripCreateResponse;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -54,6 +57,13 @@ public class TripController {
         }
 
         return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/{id}/participants")
+    public ResponseEntity<List<ParticipantData>> geAllParticipants(@PathVariable UUID id) {
+        List<ParticipantData> participantsList = this.participantService.getAllTripParticipants(id);
+
+        return ResponseEntity.ok(participantsList);
     }
 
     @PostMapping
